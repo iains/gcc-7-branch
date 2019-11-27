@@ -55,6 +55,16 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBSTDCXX_STATIC NULL
 #endif
 
+#ifndef LIBCXX
+#define LIBCXX "c++"
+#endif
+#ifndef LIBCXX_PROFILE
+#define LIBCXX_PROFILE LIBCXX
+#endif
+#ifndef LIBCXX_STATIC
+#define LIBCXX_STATIC NULL
+#endif
+
 void
 lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 		      unsigned int *in_decoded_options_count,
@@ -71,6 +81,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
      1  means libstdc++ is needed and should be linked in.
      2  means libstdc++ is needed and should be linked statically.  */
   int library = 0;
+
+  /* Which standard library to link.
+     1 = libstdc++
+     2 = libc++.  */
+  int which_library = 1;
 
   /* The number of arguments being added to what's in argv, other than
      libraries.  We use this to track the number of times we've inserted
@@ -205,6 +220,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	case OPT_static_libstdc__:
 	  library = library >= 0 ? 2 : library;
 	  args[i] |= SKIPOPT;
+	  break;
+
+	case OPT_stdlib_:
+	  which_library = decoded_options[i].value;
 	  break;
 
 	case OPT_SPECIAL_input_file:
@@ -342,9 +361,14 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  j++;
 	}
 #endif
-      generate_option (OPT_l,
-		       saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX, 1,
-		       CL_DRIVER, &new_decoded_options[j]);
+      if (which_library == 2)
+	generate_option (OPT_l,
+			 saw_profile_flag ? LIBCXX_PROFILE : LIBCXX, 1,
+			 CL_DRIVER, &new_decoded_options[j]);
+      else
+	generate_option (OPT_l,
+			 saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX, 1,
+			 CL_DRIVER, &new_decoded_options[j]);
       added_libraries++;
       j++;
       /* Add target-dependent static library, if necessary.  */

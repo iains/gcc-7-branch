@@ -1992,6 +1992,20 @@ std=iso9899:2011
 C ObjC Alias(std=c11)
 Conform to the ISO 2011 C standard.
 
+stdlib=
+Driver C++ ObjC++ Common Var(flag_stdlib_kind) Joined Enum(stdlib_kind) RejectNegative Init(1)
+-stdlib=[libstdc++|libc++]	The standard library to be used for C++ headers
+and runtime.
+
+Enum
+Name(stdlib_kind) Type(int)
+
+EnumValue
+Enum(stdlib_kind) String(libstdc++) Value(1)
+
+EnumValue
+Enum(stdlib_kind) String(libc++) Value(2)
+
 traditional
 Driver
 
