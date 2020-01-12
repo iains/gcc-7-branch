@@ -7293,6 +7293,12 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       /* Compound expressions can only occur here if -Wpedantic or
 	 -pedantic-errors is specified.  In the later case, we always want
 	 an error.  In the former case, we simply want a warning.  */
+
+      /* clang allows const vars as const init.  */
+      bool clang_allowable_const = (TREE_CODE (inside_init) == VAR_DECL
+				    && TREE_READONLY (inside_init)
+				    && !TREE_THIS_VOLATILE (inside_init));
+
       if (require_constant && pedantic
 	  && TREE_CODE (inside_init) == COMPOUND_EXPR)
 	{
@@ -7311,8 +7317,17 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	       && !initializer_constant_valid_p (inside_init,
 						 TREE_TYPE (inside_init)))
 	{
-	  error_init (init_loc, "initializer element is not constant");
-	  inside_init = error_mark_node;
+	  inside_init = DECL_INITIAL (inside_init);
+	  if (clang_allowable_const
+	      && initializer_constant_valid_p (inside_init,
+					       TREE_TYPE (inside_init)))
+	    pedwarn_init (init_loc, OPT_Wpedantic, "initializer element"
+			  " is not a constant expression");
+	  else
+	    {
+	      error_init (init_loc, "initializer element is not constant");
+	      inside_init = error_mark_node;
+	    }
 	}
       else if (require_constant && !maybe_const)
 	pedwarn_init (init_loc, OPT_Wpedantic,
