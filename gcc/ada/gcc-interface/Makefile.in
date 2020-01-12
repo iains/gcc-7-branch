@@ -2359,6 +2359,9 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
     ifeq ($(strip $(MULTISUBDIR)),/ppc64)
         SO_OPTS += -m64
     endif
+    ifeq ($(strip $(MULTISUBDIR)),/ppc)
+        SO_OPTS += -m32
+    endif
   endif
 
   ifeq ($(strip $(filter-out arm,$(target_cpu))),)

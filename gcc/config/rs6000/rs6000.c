@@ -35970,7 +35970,7 @@ macho_branch_islands (void)
 	}
       else
 	{
-	  strcat (tmp_buf, ":\nlis r12,hi16(");
+	  strcat (tmp_buf, ":\n\tlis r12,hi16(");
 	  strcat (tmp_buf, name_buf);
 	  strcat (tmp_buf, ")\n\tori r12,r12,lo16(");
 	  strcat (tmp_buf, name_buf);
@@ -36066,7 +36066,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   unsigned int length;
   char *symbol_name, *lazy_ptr_name;
   char *local_label_0;
-  static int label = 0;
+  static unsigned label = 0;
 
   /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
   symb = (*targetm.strip_name_encoding) (symb);
@@ -36092,8 +36092,8 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
 
       label++;
-      local_label_0 = XALLOCAVEC (char, sizeof ("\"L00000000000$spb\""));
-      sprintf (local_label_0, "\"L%011d$spb\"", label);
+      local_label_0 = XALLOCAVEC (char, 16);
+      sprintf (local_label_0, "L%u$spb", label);
 
       fprintf (file, "\tmflr r0\n");
       if (TARGET_LINK_STACK)

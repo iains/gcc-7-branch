@@ -2499,6 +2499,23 @@ else
 	AC_MSG_RESULT($gcc_cv_readelf)
 fi
 
+# Figure out what otool we will be using.
+AS_VAR_SET_IF(gcc_cv_otool,, [
+if test -x otool$build_exeext; then
+	gcc_cv_otool=./otool$build_exeext
+elif ( set dummy $OTOOL_FOR_TARGET; test -x $[2] ); then
+        gcc_cv_otool="$OTOOL_FOR_TARGET"
+else
+        AC_PATH_PROG(gcc_cv_otool, $OTOOL_FOR_TARGET)
+fi])
+
+AC_MSG_CHECKING(what otool to use)
+if test x$gcc_cv_otool = x; then
+	AC_MSG_RESULT(not found)
+else
+	AC_MSG_RESULT($gcc_cv_otool)
+fi
+
 # Figure out what assembler alignment features are present.
 gcc_GAS_CHECK_FEATURE([.balign and .p2align], gcc_cv_as_balign_and_p2align,
  [2,6,0],,
@@ -2753,6 +2770,8 @@ AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
 gcc_AC_INITFINI_ARRAY
 
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
+# Older versions of cctools assembler have a bug on values with the MSB
+# set.
 gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
   [elf,2,11,0],,
 [	.data
@@ -2760,6 +2779,7 @@ gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
 L1:
 	.uleb128 1280
 	.sleb128 -1010
+	.uleb128 0xffffffffffffffff
 L2:],
 [[# GAS versions before 2.11 do not support uleb128,
   # despite appearing to.
@@ -2776,6 +2796,8 @@ L2:],
     then :
     else gcc_cv_as_leb128=yes
     fi
+  elif echo "$as_ver" | grep LLVM > /dev/null; then
+    gcc_cv_as_leb128=yes
   fi]],
   [AC_DEFINE(HAVE_AS_LEB128, 1,
     [Define if your assembler supports .sleb128 and .uleb128.])],
@@ -4837,6 +4859,10 @@ if test x"$insn" != x; then
   [elf,2,11,0],, [$conftest_s],
   [if test x$gcc_cv_objdump != x \
    && $gcc_cv_objdump -h conftest.o 2> /dev/null \
+      | grep debug_line > /dev/null 2>&1; then
+     gcc_cv_as_dwarf2_debug_line=yes
+   elif test x$gcc_cv_otool != x \
+   && $gcc_cv_otool -l conftest.o 2> /dev/null \
       | grep debug_line > /dev/null 2>&1; then
      gcc_cv_as_dwarf2_debug_line=yes
    fi])
