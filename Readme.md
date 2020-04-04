@@ -19,6 +19,15 @@ It contains changes in the following categories:
 
 Changes:
 
+2020-04-04 Build fixes.
+
+ * Backported fixes for builds using an assembler that supports GOTOFF in
+   data (e.g. one using clang -cc1as or otherwise based on the LLVM x86
+   backend).
+
+ * Made two changes to support building on Darwin8.
+   NOTE: Darwin8 requires ld64-85.2.1, at minimum, to build successfully
+   with recent GCC trees.
 
 
 The GCC README:
