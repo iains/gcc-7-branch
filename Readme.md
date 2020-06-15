@@ -19,7 +19,8 @@ It contains changes in the following categories:
 
 Changes:
 
-
+This is a temporary Work In Progress branch to accompany a pre-release
+made to colleagues.
 
 The GCC README:
 
